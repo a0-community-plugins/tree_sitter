@@ -1,0 +1,73 @@
+<div x-data>
+    <template x-if="$store.pluginSettings.settings">
+        <div class="plugin-settings-cards">
+            <section class="card plugin-card">
+                <h3>Inspection Limits</h3>
+
+                <label class="field">
+                    <span>Max file bytes</span>
+                    <input type="number" min="1000" step="1000"
+                        x-model.number="$store.pluginSettings.settings.max_file_bytes" />
+                </label>
+
+                <label class="field">
+                    <span>Max chunk chars</span>
+                    <input type="number" min="200" step="100"
+                        x-model.number="$store.pluginSettings.settings.max_chunk_chars" />
+                </label>
+
+                <label class="field">
+                    <span>Max tree depth</span>
+                    <input type="number" min="1" step="1"
+                        x-model.number="$store.pluginSettings.settings.max_tree_depth" />
+                </label>
+
+                <label class="field">
+                    <span>Max query matches</span>
+                    <input type="number" min="1" step="1"
+                        x-model.number="$store.pluginSettings.settings.max_query_matches" />
+                </label>
+            </section>
+
+            <section class="card plugin-card">
+                <h3>Indexing</h3>
+
+                <label class="field">
+                    <span>Max indexed files</span>
+                    <input type="number" min="1" step="1"
+                        x-model.number="$store.pluginSettings.settings.index_max_files" />
+                </label>
+
+                <label class="field checkbox-field">
+                    <input type="checkbox"
+                        x-model="$store.pluginSettings.settings.index_hidden_files" />
+                    <span>Index hidden files</span>
+                </label>
+
+                <button class="btn btn-primary"
+                    @click="openModal('/plugins/tree_sitter/webui/tree-sitter-inspector.html')">
+                    Open Tree-sitter Inspector
+                </button>
+            </section>
+        </div>
+
+        <style>
+            .plugin-settings-cards {
+                display: grid;
+                gap: 1rem;
+            }
+            .plugin-card {
+                display: grid;
+                gap: 0.75rem;
+            }
+            .field {
+                display: grid;
+                gap: 0.35rem;
+            }
+            .checkbox-field {
+                grid-template-columns: auto 1fr;
+                align-items: center;
+            }
+        </style>
+    </template>
+</div>

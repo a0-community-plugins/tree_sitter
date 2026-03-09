@@ -1,0 +1,107 @@
+<html>
+<head>
+    <title>Tree-sitter Inspector</title>
+    <script type="module">
+        import { store } from "/plugins/tree_sitter/webui/tree-sitter-inspector-store.js";
+    </script>
+</head>
+<body>
+    <div x-data>
+        <template x-if="$store.treeSitterInspector">
+            <div x-create="$store.treeSitterInspector.onOpen()" x-destroy="$store.treeSitterInspector.cleanup()"
+                class="tree-sitter-inspector">
+                <div class="panel controls">
+                    <h2>Inspect File</h2>
+                    <label class="field">
+                        <span>File path</span>
+                        <input type="text" x-model="$store.treeSitterInspector.filePath"
+                            placeholder="/absolute/path/to/file.py" />
+                    </label>
+                    <label class="field">
+                        <span>Language override</span>
+                        <input type="text" x-model="$store.treeSitterInspector.language"
+                            placeholder="python" />
+                    </label>
+                    <label class="field">
+                        <span>Optional query</span>
+                        <textarea rows="5" x-model="$store.treeSitterInspector.query"
+                            placeholder="(function_definition name: (identifier) @name)"></textarea>
+                    </label>
+                    <button class="btn btn-primary" @click="$store.treeSitterInspector.inspectFile()"
+                        :disabled="$store.treeSitterInspector.loading">
+                        <span x-show="!$store.treeSitterInspector.loading">Inspect</span>
+                        <span x-show="$store.treeSitterInspector.loading">Inspecting...</span>
+                    </button>
+                </div>
+
+                <div class="panel controls">
+                    <h2>Repo Index</h2>
+                    <label class="field">
+                        <span>Repo root</span>
+                        <input type="text" x-model="$store.treeSitterInspector.rootPath"
+                            placeholder="/absolute/path/to/repo" />
+                    </label>
+                    <div class="actions">
+                        <button class="btn" @click="$store.treeSitterInspector.refreshIndexStatus()">
+                            Refresh Status
+                        </button>
+                        <button class="btn btn-primary" @click="$store.treeSitterInspector.reindex()"
+                            :disabled="$store.treeSitterInspector.reindexing">
+                            <span x-show="!$store.treeSitterInspector.reindexing">Reindex</span>
+                            <span x-show="$store.treeSitterInspector.reindexing">Reindexing...</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="panel error" x-show="$store.treeSitterInspector.error">
+                    <strong>Error</strong>
+                    <pre x-text="$store.treeSitterInspector.error"></pre>
+                </div>
+
+                <div class="panel" x-show="$store.treeSitterInspector.inspection">
+                    <h2>Inspection Result</h2>
+                    <pre x-text="$store.treeSitterInspector.formatJson($store.treeSitterInspector.inspection)"></pre>
+                </div>
+
+                <div class="panel" x-show="$store.treeSitterInspector.indexStatus">
+                    <h2>Index Status</h2>
+                    <pre x-text="$store.treeSitterInspector.formatJson($store.treeSitterInspector.indexStatus)"></pre>
+                </div>
+            </div>
+        </template>
+    </div>
+
+    <style>
+        .tree-sitter-inspector {
+            display: grid;
+            gap: 1rem;
+            padding: 1rem;
+        }
+        .panel {
+            display: grid;
+            gap: 0.75rem;
+            padding: 1rem;
+            border: 1px solid var(--color-border);
+            border-radius: var(--border-radius);
+            background: var(--color-panel);
+        }
+        .field {
+            display: grid;
+            gap: 0.35rem;
+        }
+        .actions {
+            display: flex;
+            gap: 0.75rem;
+        }
+        pre {
+            margin: 0;
+            padding: 0.75rem;
+            overflow: auto;
+            background: rgba(0, 0, 0, 0.15);
+            border-radius: var(--border-radius);
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+    </style>
+</body>
+</html>
