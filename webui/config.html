@@ -1,5 +1,5 @@
 <div x-data>
-    <template x-if="$store.pluginSettings.settings">
+    <template x-if="config">
         <div class="plugin-settings-cards">
             <section class="card plugin-card">
                 <h3>Inspection Limits</h3>
@@ -7,25 +7,25 @@
                 <label class="field">
                     <span>Max file bytes</span>
                     <input type="number" min="1000" step="1000"
-                        x-model.number="$store.pluginSettings.settings.max_file_bytes" />
+                        x-model.number="config.max_file_bytes" />
                 </label>
 
                 <label class="field">
                     <span>Max chunk chars</span>
                     <input type="number" min="200" step="100"
-                        x-model.number="$store.pluginSettings.settings.max_chunk_chars" />
+                        x-model.number="config.max_chunk_chars" />
                 </label>
 
                 <label class="field">
                     <span>Max tree depth</span>
                     <input type="number" min="1" step="1"
-                        x-model.number="$store.pluginSettings.settings.max_tree_depth" />
+                        x-model.number="config.max_tree_depth" />
                 </label>
 
                 <label class="field">
                     <span>Max query matches</span>
                     <input type="number" min="1" step="1"
-                        x-model.number="$store.pluginSettings.settings.max_query_matches" />
+                        x-model.number="config.max_query_matches" />
                 </label>
             </section>
 
@@ -35,12 +35,15 @@
                 <label class="field">
                     <span>Max indexed files</span>
                     <input type="number" min="1" step="1"
-                        x-model.number="$store.pluginSettings.settings.index_max_files" />
+                        x-model.number="config.index_max_files" />
                 </label>
 
-                <label class="field checkbox-field">
-                    <input type="checkbox"
-                        x-model="$store.pluginSettings.settings.index_hidden_files" />
+                <label class="field toggle-field">
+                    <label class="toggle">
+                        <input type="checkbox"
+                            x-model="config.index_hidden_files" />
+                        <span class="toggler"></span>
+                    </label>
                     <span>Index hidden files</span>
                 </label>
 

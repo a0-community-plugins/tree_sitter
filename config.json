@@ -1,1 +1,1 @@
-{"max_file_bytes": 200000, "max_chunk_chars": 1600, "max_tree_depth": 3, "max_query_matches": 50, "index_hidden_files": false, "index_max_files": 500}
+{"max_file_bytes": 200000, "max_chunk_chars": 1600, "max_tree_depth": 3, "max_query_matches": 50, "index_hidden_files": true, "index_max_files": 500}
