@@ -1,3 +1,4 @@
+name: tree_sitter
 title: Tree-sitter
 description: Structural code navigation, syntax-aware chunking, and repo indexing for coding agents.
 version: 0.1.0
