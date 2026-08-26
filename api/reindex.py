@@ -20,6 +20,7 @@ class Reindex(ApiHandler):
                 root_path,
                 agent=context.agent0 if context else None,
                 project_name=project_name,
+                force=bool(input.get("force", False)),
             )
         except (FileNotFoundError, TreeSitterRuntimeError, ValueError) as exc:
             return Response(str(exc), 400)

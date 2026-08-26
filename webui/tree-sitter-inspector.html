@@ -1,6 +1,6 @@
 <html>
 <head>
-    <title>Tree-sitter Inspector</title>
+    <title>Tree-sitter Code Intelligence</title>
     <script type="module">
         import { store } from "/plugins/tree_sitter/webui/tree-sitter-inspector-store.js";
     </script>
@@ -8,109 +8,113 @@
 <body>
     <div x-data>
         <template x-if="$store.treeSitterInspector">
-            <div x-create="$store.treeSitterInspector.onOpen()" x-destroy="$store.treeSitterInspector.cleanup()"
-                class="tree-sitter-inspector">
-                <div class="panel controls">
-                    <h2>Inspect File</h2>
-                    <label class="field">
-                        <span>File path</span>
-                        <input type="text" x-model="$store.treeSitterInspector.filePath"
-                            placeholder="/absolute/path/to/file.py" />
-                    </label>
-                    <label class="field">
-                        <span>Language override</span>
-                        <input type="text" x-model="$store.treeSitterInspector.language"
-                            placeholder="python" />
-                    </label>
-                    <label class="field">
-                        <span>Optional query</span>
-                        <textarea rows="5" x-model="$store.treeSitterInspector.query"
-                            placeholder="(function_definition name: (identifier) @name)"></textarea>
-                    </label>
-                    <button class="btn btn-primary" @click="$store.treeSitterInspector.inspectFile()"
-                        :disabled="$store.treeSitterInspector.loading">
-                        <span x-show="!$store.treeSitterInspector.loading">Inspect</span>
-                        <span x-show="$store.treeSitterInspector.loading">Inspecting...</span>
-                    </button>
-                </div>
+            <main x-create="$store.treeSitterInspector.onOpen()"
+                x-destroy="$store.treeSitterInspector.cleanup()" class="tree-sitter-workbench">
+                <header class="workbench-header">
+                    <div>
+                        <p class="eyebrow">STRUCTURAL CODING</p>
+                        <h2>Code Intelligence</h2>
+                        <p>Build focused repository context, inspect syntax, and verify changed files.</p>
+                    </div>
+                    <div class="runtime-pill"
+                        :class="$store.treeSitterInspector.runtime?.ready ? 'ready' : 'missing'">
+                        <span class="status-dot"></span>
+                        <span x-text="$store.treeSitterInspector.runtime?.ready ? 'Runtime ready' : 'Runtime unavailable'"></span>
+                    </div>
+                </header>
 
-                <div class="panel error" x-show="$store.treeSitterInspector.depsNeeded">
-                    <strong>Missing Dependency</strong>
-                    <p>Tree-sitter support requires the <code>tree-sitter-language-pack</code> package.</p>
-                    <button class="btn btn-primary" @click="$store.treeSitterInspector.installDeps()"
-                        :disabled="$store.treeSitterInspector.installing">
-                        <span x-show="!$store.treeSitterInspector.installing">Install Dependencies</span>
-                        <span x-show="$store.treeSitterInspector.installing">Installing...</span>
-                    </button>
-                </div>
-
-                <div class="panel controls">
-                    <h2>Repo Index</h2>
-                    <label class="field">
-                        <span>Repo root</span>
-                        <input type="text" x-model="$store.treeSitterInspector.rootPath"
-                            placeholder="/absolute/path/to/repo" />
+                <section class="panel repo-panel">
+                    <label class="field grow"><span>Repository root</span>
+                        <input type="text" x-model="$store.treeSitterInspector.rootPath" placeholder="/absolute/path/to/repository" />
                     </label>
-                    <div class="actions">
-                        <button class="btn" @click="$store.treeSitterInspector.refreshIndexStatus()">
-                            Refresh Status
-                        </button>
-                        <button class="btn btn-primary" @click="$store.treeSitterInspector.reindex()"
-                            :disabled="$store.treeSitterInspector.reindexing">
-                            <span x-show="!$store.treeSitterInspector.reindexing">Reindex</span>
-                            <span x-show="$store.treeSitterInspector.reindexing">Reindexing...</span>
+                    <div class="actions bottom">
+                        <button class="btn" @click="$store.treeSitterInspector.refreshIndexStatus()"
+                            :disabled="$store.treeSitterInspector.busy">Status</button>
+                        <button class="btn btn-primary" @click="$store.treeSitterInspector.reindex(false)"
+                            :disabled="$store.treeSitterInspector.busy">
+                            <x-icon name="refresh"></x-icon>
+                            <span x-text="$store.treeSitterInspector.busy === 'index' ? 'Indexing…' : 'Refresh index'"></span>
                         </button>
                     </div>
+                </section>
+
+                <div class="workbench-grid">
+                    <section class="panel">
+                        <p class="eyebrow">PLAN</p>
+                        <h3>Build coding context</h3>
+                        <label class="field"><span>Task</span>
+                            <textarea rows="4" x-model="$store.treeSitterInspector.task"
+                                placeholder="Describe the change or investigation"></textarea>
+                        </label>
+                        <label class="field"><span>Primary symbol (optional)</span>
+                            <input type="text" x-model="$store.treeSitterInspector.symbol" placeholder="AgentContext" />
+                        </label>
+                        <div class="actions">
+                            <button class="btn btn-primary" @click="$store.treeSitterInspector.buildContext()"
+                                :disabled="$store.treeSitterInspector.busy">Build context</button>
+                            <button class="btn" @click="$store.treeSitterInspector.search()"
+                                :disabled="$store.treeSitterInspector.busy || !$store.treeSitterInspector.symbol">Find definitions</button>
+                        </div>
+                    </section>
+
+                    <section class="panel">
+                        <p class="eyebrow">INSPECT</p>
+                        <h3>Analyze a source file</h3>
+                        <label class="field"><span>File path</span>
+                            <input type="text" x-model="$store.treeSitterInspector.filePath" placeholder="relative/or/absolute.py" />
+                        </label>
+                        <div class="two-columns">
+                            <label class="field"><span>Language override</span>
+                                <input type="text" x-model="$store.treeSitterInspector.language" placeholder="auto" />
+                            </label>
+                            <label class="field"><span>Optional S-expression query</span>
+                                <input type="text" x-model="$store.treeSitterInspector.query" placeholder="(function_definition) @fn" />
+                            </label>
+                        </div>
+                        <button class="btn btn-primary" @click="$store.treeSitterInspector.inspectFile()"
+                            :disabled="$store.treeSitterInspector.busy">Inspect file</button>
+                    </section>
                 </div>
 
-                <div class="panel error" x-show="$store.treeSitterInspector.error">
-                    <strong>Error</strong>
-                    <pre x-text="$store.treeSitterInspector.error"></pre>
-                </div>
-
-                <div class="panel" x-show="$store.treeSitterInspector.inspection">
-                    <h2>Inspection Result</h2>
-                    <pre x-text="$store.treeSitterInspector.formatJson($store.treeSitterInspector.inspection)"></pre>
-                </div>
-
-                <div class="panel" x-show="$store.treeSitterInspector.indexStatus">
-                    <h2>Index Status</h2>
-                    <pre x-text="$store.treeSitterInspector.formatJson($store.treeSitterInspector.indexStatus)"></pre>
-                </div>
-            </div>
+                <section class="result-grid" x-show="$store.treeSitterInspector.indexStatus || $store.treeSitterInspector.searchResult || $store.treeSitterInspector.contextResult || $store.treeSitterInspector.inspection">
+                    <article class="panel result" x-show="$store.treeSitterInspector.contextResult">
+                        <h3>Coding context</h3><pre x-text="$store.treeSitterInspector.formatJson($store.treeSitterInspector.contextResult)"></pre>
+                    </article>
+                    <article class="panel result" x-show="$store.treeSitterInspector.searchResult">
+                        <h3>Definition search</h3><pre x-text="$store.treeSitterInspector.formatJson($store.treeSitterInspector.searchResult)"></pre>
+                    </article>
+                    <article class="panel result" x-show="$store.treeSitterInspector.inspection">
+                        <h3>File analysis</h3><pre x-text="$store.treeSitterInspector.formatJson($store.treeSitterInspector.inspection)"></pre>
+                    </article>
+                    <article class="panel result" x-show="$store.treeSitterInspector.indexStatus">
+                        <h3>Index status</h3><pre x-text="$store.treeSitterInspector.formatJson($store.treeSitterInspector.indexStatus)"></pre>
+                    </article>
+                </section>
+            </main>
         </template>
     </div>
-
     <style>
-        .tree-sitter-inspector {
-            display: grid;
-            gap: 1rem;
-            padding: 1rem;
-        }
-        .panel {
-            display: grid;
-            gap: 0.75rem;
-            padding: 1rem;
-            border: 1px solid var(--color-border);
-            border-radius: var(--border-radius);
-            background: var(--color-panel);
-        }
-        .field {
-            display: grid;
-            gap: 0.35rem;
-        }
-        .actions {
-            display: flex;
-            gap: 0.75rem;
-        }
-        pre {
-            margin: 0;
-            padding: 0.75rem;
-            overflow: auto;
-            background: rgba(0, 0, 0, 0.15);
-            border-radius: var(--border-radius);
-            white-space: pre-wrap;
-            word-break: break-word;
+        .tree-sitter-workbench { --ts-accent: #78d6b2; display: grid; gap: 1rem; padding: 1rem; max-width: 1180px; margin: 0 auto; }
+        .workbench-header { display: flex; justify-content: space-between; gap: 1rem; align-items: flex-start; padding: .5rem .2rem; }
+        .workbench-header h2, .workbench-header p, .panel h3 { margin: 0; }
+        .workbench-header > div:first-child { display: grid; gap: .3rem; }
+        .eyebrow { color: var(--ts-accent); font-size: .72rem; font-weight: 700; letter-spacing: .13em; }
+        .runtime-pill { display: flex; gap: .5rem; align-items: center; padding: .5rem .7rem; border: 1px solid var(--color-border); border-radius: 999px; white-space: nowrap; }
+        .status-dot { width: .55rem; height: .55rem; border-radius: 50%; background: #d26a6a; }
+        .runtime-pill.ready .status-dot { background: var(--ts-accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--ts-accent) 20%, transparent); }
+        .panel { display: grid; gap: .75rem; padding: 1rem; border: 1px solid var(--color-border); border-radius: var(--border-radius); background: var(--color-panel); }
+        .repo-panel { grid-template-columns: 1fr auto; align-items: end; }
+        .workbench-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+        .result-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+        .field { display: grid; gap: .35rem; }
+        .two-columns { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .75rem; }
+        .actions { display: flex; flex-wrap: wrap; gap: .6rem; }
+        .actions.bottom { align-items: end; }
+        .result { min-height: 12rem; }
+        pre { margin: 0; padding: .8rem; max-height: 32rem; overflow: auto; background: color-mix(in srgb, #000 18%, transparent); border-radius: var(--border-radius); white-space: pre-wrap; overflow-wrap: anywhere; font-size: .78rem; }
+        @media (max-width: 760px) {
+            .workbench-header, .repo-panel { display: grid; grid-template-columns: 1fr; }
+            .workbench-grid, .result-grid, .two-columns { grid-template-columns: 1fr; }
         }
     </style>
 </body>

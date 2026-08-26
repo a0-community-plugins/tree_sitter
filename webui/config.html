@@ -1,109 +1,94 @@
-<div x-data="{ installing: false, depsInstalled: false, depsError: '' }">
+<div x-data="{ runtime: null }"
+    x-init="
+        const { callJsonApi } = await import('/js/api.js');
+        const { toastFrontendError } = await import('/components/notifications/notification-store.js');
+        try { runtime = await callJsonApi('/plugins/tree_sitter/runtime_status', {}); }
+        catch (error) { void toastFrontendError(error?.message || String(error), 'Tree-sitter'); }
+    ">
     <template x-if="config">
-        <div class="plugin-settings-cards">
-            <section class="card plugin-card" x-show="!depsInstalled">
-                <h3>Dependencies</h3>
-                <p>Tree-sitter requires the <code>tree-sitter-language-pack</code> Python package.</p>
-                <div class="actions">
-                    <button class="btn btn-primary" :disabled="installing"
-                        @click="
-                            installing = true; depsError = '';
-                            const { callJsonApi } = await import('/js/api.js');
-                            try {
-                                await callJsonApi('/plugins/tree_sitter/install_deps', {});
-                                depsInstalled = true;
-                            } catch (e) { depsError = e.message || String(e); }
-                            finally { installing = false; }
-                        ">
-                        <span x-show="!installing">Install Dependencies</span>
-                        <span x-show="installing">Installing...</span>
-                    </button>
+        <div class="tree-sitter-settings">
+            <section class="card plugin-card">
+                <div class="section-title">
+                    <x-icon name="account_tree"></x-icon>
+                    <div>
+                        <h3>Structural coding runtime</h3>
+                        <p>Repository intelligence runs inside Agent Zero's framework runtime.</p>
+                    </div>
                 </div>
-                <p class="error-text" x-show="depsError" x-text="depsError"></p>
-            </section>
-            <section class="card plugin-card" x-show="depsInstalled">
-                <h3>Dependencies</h3>
-                <p>tree-sitter-language-pack installed successfully.</p>
+                <template x-if="runtime">
+                    <dl class="status-grid">
+                        <div><dt>Status</dt><dd x-text="runtime.ready ? 'Ready' : 'Dependency not provisioned'"></dd></div>
+                        <div><dt>Language pack</dt><dd x-text="runtime.language_pack_version || 'Not installed'"></dd></div>
+                        <div><dt>Languages</dt><dd x-text="runtime.available_language_count || 0"></dd></div>
+                        <div><dt>Cached parsers</dt><dd x-text="runtime.downloaded_languages?.length || 0"></dd></div>
+                    </dl>
+                </template>
             </section>
 
             <section class="card plugin-card">
-                <h3>Inspection Limits</h3>
-
-                <label class="field">
-                    <span>Max file bytes</span>
-                    <input type="number" min="1000" step="1000"
-                        x-model.number="config.max_file_bytes" />
+                <h3>Coding context</h3>
+                <label class="field"><span>Maximum context characters</span>
+                    <input type="number" min="1000" step="1000" x-model.number="config.context_max_chars" />
                 </label>
-
-                <label class="field">
-                    <span>Max chunk chars</span>
-                    <input type="number" min="200" step="100"
-                        x-model.number="config.max_chunk_chars" />
+                <label class="field"><span>Maximum context results</span>
+                    <input type="number" min="1" step="1" x-model.number="config.context_max_results" />
                 </label>
-
-                <label class="field">
-                    <span>Max tree depth</span>
-                    <input type="number" min="1" step="1"
-                        x-model.number="config.max_tree_depth" />
+                <label class="field"><span>Snippet characters per definition</span>
+                    <input type="number" min="100" step="100" x-model.number="config.index_snippet_chars" />
                 </label>
-
-                <label class="field">
-                    <span>Max query matches</span>
-                    <input type="number" min="1" step="1"
-                        x-model.number="config.max_query_matches" />
+                <label class="toggle-field">
+                    <label class="toggle"><input type="checkbox" x-model="config.auto_refresh_index" /><span class="toggler"></span></label>
+                    <span>Refresh changed files when building task context</span>
                 </label>
             </section>
 
             <section class="card plugin-card">
-                <h3>Indexing</h3>
-
-                <label class="field">
-                    <span>Max indexed files</span>
-                    <input type="number" min="1" step="1"
-                        x-model.number="config.index_max_files" />
+                <h3>Parsing and indexing</h3>
+                <label class="field"><span>Maximum source file bytes</span>
+                    <input type="number" min="10000" step="10000" x-model.number="config.max_file_bytes" />
                 </label>
-
-                <label class="field toggle-field">
-                    <label class="toggle">
-                        <input type="checkbox"
-                            x-model="config.index_hidden_files" />
-                        <span class="toggler"></span>
-                    </label>
-                    <span>Index hidden files</span>
+                <label class="field"><span>Chunk character budget</span>
+                    <input type="number" min="500" step="500" x-model.number="config.max_chunk_chars" />
                 </label>
+                <label class="field"><span>Parse timeout (milliseconds)</span>
+                    <input type="number" min="100" step="100" x-model.number="config.parse_timeout_ms" />
+                </label>
+                <label class="field"><span>Maximum indexed files</span>
+                    <input type="number" min="1" step="100" x-model.number="config.index_max_files" />
+                </label>
+                <label class="toggle-field">
+                    <label class="toggle"><input type="checkbox" x-model="config.index_include_untracked" /><span class="toggler"></span></label>
+                    <span>Include untracked files while honoring .gitignore</span>
+                </label>
+                <label class="toggle-field">
+                    <label class="toggle"><input type="checkbox" x-model="config.index_hidden_files" /><span class="toggler"></span></label>
+                    <span>Index hidden source files</span>
+                </label>
+            </section>
 
-                <button class="btn btn-primary"
-                    @click="openModal('/plugins/tree_sitter/webui/tree-sitter-inspector.html')">
-                    Open Tree-sitter Inspector
+            <section class="card plugin-card">
+                <h3>Repository boundary</h3>
+                <p>File inspection is restricted to the active project by default.</p>
+                <label class="toggle-field">
+                    <label class="toggle"><input type="checkbox" x-model="config.allow_outside_project" /><span class="toggler"></span></label>
+                    <span>Allow explicit file paths outside the active project</span>
+                </label>
+                <button class="btn btn-primary" @click="openModal('/plugins/tree_sitter/webui/tree-sitter-inspector.html')">
+                    <x-icon name="manage_search"></x-icon> Open Code Intelligence
                 </button>
             </section>
         </div>
-
         <style>
-            .plugin-settings-cards {
-                display: grid;
-                gap: 1rem;
-            }
-            .plugin-card {
-                display: grid;
-                gap: 0.75rem;
-            }
-            .field {
-                display: grid;
-                gap: 0.35rem;
-            }
-            .checkbox-field {
-                grid-template-columns: auto 1fr;
-                align-items: center;
-            }
-            .actions {
-                display: flex;
-                gap: 0.75rem;
-            }
-            .error-text {
-                color: var(--color-error, #e74c3c);
-                margin: 0;
-            }
+            .tree-sitter-settings { display: grid; gap: 1rem; }
+            .tree-sitter-settings .plugin-card { display: grid; gap: .8rem; }
+            .tree-sitter-settings .section-title { display: flex; gap: .75rem; align-items: flex-start; }
+            .tree-sitter-settings h3, .tree-sitter-settings p { margin: 0; }
+            .tree-sitter-settings .field { display: grid; gap: .35rem; }
+            .tree-sitter-settings .toggle-field { display: flex; gap: .65rem; align-items: center; }
+            .tree-sitter-settings .status-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: .65rem; margin: 0; }
+            .tree-sitter-settings .status-grid div { padding: .7rem; border: 1px solid var(--color-border); border-radius: var(--border-radius); }
+            .tree-sitter-settings dt { opacity: .7; font-size: .8rem; }
+            .tree-sitter-settings dd { margin: .2rem 0 0; font-weight: 600; }
         </style>
     </template>
 </div>
