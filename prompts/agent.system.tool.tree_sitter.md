@@ -1,39 +1,47 @@
 ### tree_sitter
-use Tree-sitter for structure-aware code navigation and indexing
-best for definitions references chunks scope and syntax queries
-works on source files only and requires supported language detection
+Structural code intelligence for the active Agent Zero project. Use it to reduce blind file reading; it complements text search, type checking, and tests.
 
-#### tree_sitter:symbols
-extract symbols from one file
-args path language(optional)
-returns classes functions and other named definitions with spans and qualified names
+#### tree_sitter:context
+Build a bounded coding context before a non-trivial edit.
+Arguments: `task`, optional `symbol`, optional `root_path`.
+Returns relevant definitions with snippets, imports, references, and index status.
+
+#### tree_sitter:search
+Find definitions by name or qualified name across the repository.
+Arguments: `query`, optional `root_path`, optional `limit`.
 
 #### tree_sitter:references
-find references to a symbol within one file
-args path symbol language(optional)
-returns definitions and identifier references for the provided symbol name
+Find structurally parsed occurrences of a symbol across the repository.
+Arguments: `symbol`, optional `root_path`, optional `limit`.
+This is syntax-aware but not a type-resolved language server result.
 
-#### tree_sitter:chunks
-build syntax-aware chunks from one file
-args path language(optional)
-returns structured chunks labeled by symbol scope
+#### tree_sitter:inspect
+Inspect one source file.
+Arguments: `path`, optional `language`, optional `root_path`.
+Returns definitions, imports, exports, identifiers, diagnostics, chunks, and metrics.
+
+#### tree_sitter:diagnostics
+Check changed files for Tree-sitter error or missing nodes after editing.
+Arguments: `paths` (array or comma-separated paths), optional `root_path`.
+Run the compiler, linter, and tests too.
 
 #### tree_sitter:scope
-find the smallest enclosing symbol scope for a location
-args path line column language(optional)
-returns the enclosing class/function/scope at the requested position
+Find the smallest enclosing definition at a source position.
+Arguments: `path`, `line`, `column`, optional `language`, optional `root_path`.
 
 #### tree_sitter:query
-run a Tree-sitter query against one file
-args path query language(optional)
-returns query matches and captures
+Run a grammar-specific Tree-sitter S-expression query on one file.
+Arguments: `path`, either `query` or `query_kind` (`tags`, `locals`, `highlights`, `injections`, `folds`, `indents`), optional `language`, optional `root_path`.
 
 #### tree_sitter:index
-build or rebuild a structural index for a repository root or active project
-args root_path(optional)
-returns manifest summary with indexed files languages symbols and chunks
+Incrementally refresh the repository index; unchanged files are reused.
+Arguments: optional `root_path`, optional `force`.
 
-#### tree_sitter:lookup
-search the structural index for a symbol
-args symbol root_path(optional)
-returns indexed symbol matches across the repo
+#### tree_sitter:status
+Report framework-runtime readiness and current project index status.
+Arguments: optional `root_path`.
+
+#### tree_sitter:languages
+Report runtime status and the available language catalog.
+
+Compatibility aliases: `symbols`, `chunks`, `lookup`, and `overview`.
