@@ -1,10 +1,11 @@
 # Tree-sitter Code Intelligence for Agent Zero
 
-Tree-sitter gives Agent Zero a structural view of a repository before it edits code and a fast syntax check after it edits code. Version 1.0 replaces the original file-local prototype with a project-aware coding workflow.
+Tree-sitter gives Agent Zero a structural view of a repository before it edits code and a fast syntax check after it edits code. Version 1.1 makes that project intelligence automatic for active-project tasks while retaining focused tools and a manual inspector for deeper work.
 
 ## What it adds
 
 - bounded task context assembled from definitions, imports, references, and source snippets
+- automatic structural context before the first model call for each active-project task
 - incremental SQLite indexes that reuse unchanged files and honor Git ignore rules
 - repository-wide definition search and syntax-aware identifier references
 - file structure, imports, exports, diagnostics, metrics, and LLM-oriented chunks
@@ -17,7 +18,9 @@ The parser layer uses `tree-sitter-language-pack==1.15.8`, which currently expos
 
 ## Coding workflow
 
-For a non-trivial change, Agent Zero can:
+When an Agent Zero project is active, the plugin incrementally refreshes its local index and adds bounded structural context before the first model call. That context remains available through the task loop without rebuilding on every model iteration. The behavior is enabled by default and can be disabled in Plugin Settings.
+
+For deeper investigation or explicit verification, Agent Zero can:
 
 1. call `tree_sitter:context` with the coding task and optional primary symbol;
 2. inspect exact definitions and repository-wide structural references;
@@ -54,6 +57,8 @@ There is deliberately no `initialize.py`, `execute.py`, or dependency-install AP
 - `pre_update()` records readiness without installing the old revision's requirement;
 - the Plugin Hub invokes `install()` again after pulling the update;
 - `uninstall()` leaves the shared framework package intact while Agent Zero removes plugin-owned files and indexes.
+
+The `message_loop_prompts_after` extension is the always-on integration point. On the first loop iteration it resolves the active project, incrementally refreshes only changed files, and adds a bounded, data-delimited structural snapshot to the prompt. Concurrent agents share a per-project index lock so they do not rebuild the same SQLite index simultaneously. Missing-project state is a quiet no-op; indexing failures are reported as framework warnings and never prevent the agent from continuing. The Code Intelligence Inspector is intentionally a manual diagnostic surface, not the primary activation path.
 
 Settings are project- and agent-profile-aware. Relative file paths resolve against the active Agent Zero project. By default, file inspection cannot escape that project root; the setting can be changed when an operator deliberately needs cross-project inspection.
 

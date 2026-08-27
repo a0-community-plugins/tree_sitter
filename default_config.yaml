@@ -8,5 +8,6 @@ index_max_files: 5000
 index_snippet_chars: 800
 context_max_chars: 16000
 context_max_results: 16
+auto_context_enabled: true
 auto_refresh_index: true
 allow_outside_project: false

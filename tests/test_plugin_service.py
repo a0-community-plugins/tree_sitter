@@ -1,5 +1,8 @@
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 import sys
+import threading
+import time
 import types
 
 import pytest
@@ -58,6 +61,27 @@ def test_build_index_reuses_unchanged_files_and_refreshes_changes(service):
     assert second["unchanged_files"] == 1
     assert third["changed_files"] == 1
     assert plugin_service.search_symbols(str(service), query="beta")["matches"][0]["name"] == "beta"
+
+
+def test_concurrent_builds_serialize_per_project(service, monkeypatch):
+    service.mkdir()
+    (service / "sample.py").write_text("def alpha(): pass\n", encoding="utf-8")
+    calls = 0
+    calls_lock = threading.Lock()
+
+    def slow_analysis(source, language, **kwargs):
+        nonlocal calls
+        with calls_lock:
+            calls += 1
+        time.sleep(0.05)
+        return _analysis(source, language, **kwargs)
+
+    monkeypatch.setattr(plugin_service.runtime_support, "analyze_source", slow_analysis)
+    with ThreadPoolExecutor(max_workers=2) as executor:
+        results = list(executor.map(lambda _item: plugin_service.build_index(str(service)), range(2)))
+
+    assert calls == 1
+    assert sorted(result["changed_files"] for result in results) == [0, 1]
 
 
 def test_context_returns_bounded_definition_snippets(service):

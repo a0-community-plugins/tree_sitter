@@ -5,6 +5,7 @@ import os
 from pathlib import Path
 import re
 import subprocess
+import threading
 from typing import Any, Iterable
 
 from helpers import files, plugins
@@ -22,6 +23,8 @@ _WALK_EXCLUDES = {
     ".mypy_cache", ".ruff_cache", ".tox", ".nox", ".venv", "venv", "node_modules",
     "dist", "build", "target", "vendor", "coverage", ".next", ".turbo",
 }
+_INDEX_LOCKS_GUARD = threading.Lock()
+_INDEX_LOCKS: dict[str, threading.Lock] = {}
 
 
 def get_config(agent=None) -> dict[str, Any]:
@@ -82,6 +85,17 @@ def build_index(
     if not root.is_dir():
         raise FileNotFoundError(f"Index root not found: {root}")
     key = project_key_for_root(root, project_name=project_name)
+    with _index_lock(key):
+        return _build_index_locked(root, key, cfg, force=force)
+
+
+def _build_index_locked(
+    root: Path,
+    key: str,
+    cfg: dict[str, Any],
+    *,
+    force: bool,
+) -> dict[str, Any]:
     store = ProjectIndexStore(INDEX_ROOT)
     existing = {} if force else store.fingerprints(key)
     candidates, truncated = _source_files(root, cfg)
@@ -138,6 +152,11 @@ def build_index(
         "candidate_files": len(candidates),
     })
     return manifest
+
+
+def _index_lock(project_key: str) -> threading.Lock:
+    with _INDEX_LOCKS_GUARD:
+        return _INDEX_LOCKS.setdefault(project_key, threading.Lock())
 
 
 def get_index_status(root_path: str, *, project_name: str | None = None) -> dict[str, Any] | None:

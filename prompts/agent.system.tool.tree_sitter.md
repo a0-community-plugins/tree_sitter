@@ -1,6 +1,8 @@
 ### tree_sitter
 Structural code intelligence for the active Agent Zero project. Use it to reduce blind file reading; it complements text search, type checking, and tests.
 
+For active-project tasks, bounded structural context is added automatically before the first model call. Use the methods below when you need a more specific query, a manual refresh, or post-edit diagnostics.
+
 #### tree_sitter:context
 Build a bounded coding context before a non-trivial edit.
 Arguments: `task`, optional `symbol`, optional `root_path`.
