@@ -1,94 +1,188 @@
-<div x-data="{ runtime: null }"
+<!--
+THESIS: Runtime truth and coding controls read as one compact instrument panel, refusing a loose stack of generic cards.
+OWN-WORLD: Agent Zero theme tokens, crisp one-pixel boundaries, a mint readiness signal, dense control groups, and tabular runtime facts.
+STORY: Confirm the structural runtime first, tune context and indexing second, then open Code Intelligence.
+FIRST VIEWPORT: A slim runtime header and four inline facts lead into balanced control groups; the primary action stays visible on desktop.
+FORM: Compact operational console, treated as a direct extension of Agent Zero; direction key: local-extension-tree-sitter-settings.
+FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, DESIGN.md, and every shipping raster carrying its provenance
+-->
+<div
+    x-data="{ runtime: null, runtimeLoading: true, runtimeError: '' }"
     x-init="
         const { callJsonApi } = await import('/js/api.js');
         const { toastFrontendError } = await import('/components/notifications/notification-store.js');
-        try { runtime = await callJsonApi('/plugins/tree_sitter/runtime_status', {}); }
-        catch (error) { void toastFrontendError(error?.message || String(error), 'Tree-sitter'); }
-    ">
+        try {
+            runtime = await callJsonApi('/plugins/tree_sitter/runtime_status', {});
+        } catch (error) {
+            runtimeError = error?.message || String(error);
+            void toastFrontendError(runtimeError, 'Tree-sitter');
+        } finally {
+            runtimeLoading = false;
+        }
+    "
+>
     <template x-if="config">
         <div class="tree-sitter-settings">
-            <section class="card plugin-card">
-                <div class="section-title">
-                    <x-icon name="account_tree"></x-icon>
-                    <div>
-                        <h3>Structural coding runtime</h3>
-                        <p>Repository intelligence runs inside Agent Zero's framework runtime.</p>
+            <section class="ts-console" aria-labelledby="tree-sitter-runtime-title">
+                <header class="ts-runtime-head">
+                    <div class="ts-runtime-identity">
+                        <span class="ts-runtime-icon" aria-hidden="true"><x-icon name="account_tree"></x-icon></span>
+                        <div>
+                            <h2 id="tree-sitter-runtime-title">Structural coding runtime</h2>
+                            <p>Repository intelligence inside Agent Zero's framework runtime.</p>
+                        </div>
                     </div>
+                    <div class="ts-runtime-state" aria-live="polite">
+                        <span x-show="runtimeLoading" class="ts-status-pill is-checking"><span class="ts-status-dot"></span> Checking runtime</span>
+                        <span x-show="!runtimeLoading && runtime" class="ts-status-pill" :class="runtime?.ready ? 'is-ready' : 'is-missing'">
+                            <span class="ts-status-dot"></span><span x-text="runtime?.ready ? 'Ready' : 'Setup required'"></span>
+                        </span>
+                        <span x-show="!runtimeLoading && runtimeError" class="ts-status-pill is-missing"><span class="ts-status-dot"></span> Unavailable</span>
+                    </div>
+                </header>
+
+                <dl class="ts-runtime-facts" x-show="runtime" aria-label="Tree-sitter runtime details">
+                    <div><dt>Language pack</dt><dd x-text="runtime?.language_pack_version || 'Not installed'"></dd></div>
+                    <div><dt>Languages</dt><dd x-text="runtime?.available_language_count ?? 0"></dd></div>
+                    <div><dt>Cached parsers</dt><dd x-text="runtime?.downloaded_languages?.length ?? 0"></dd></div>
+                    <div><dt>Integration</dt><dd x-text="config.auto_context_enabled ? 'Automatic' : 'Manual'"></dd></div>
+                </dl>
+                <div class="ts-runtime-message" x-show="runtimeLoading" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+                <p class="ts-runtime-error" x-show="!runtimeLoading && runtimeError">Runtime details could not be loaded. Saved settings remain available.</p>
+
+                <div class="ts-settings-grid">
+                    <section class="ts-config-group" aria-labelledby="tree-sitter-context-title">
+                        <div class="ts-group-heading">
+                            <div><h3 id="tree-sitter-context-title">Coding context</h3><p>Shape the structural context added to coding tasks.</p></div>
+                        </div>
+                        <div class="ts-field-grid">
+                            <label class="ts-field"><span>Context characters</span><input type="number" min="1000" step="1000" x-model.number="config.context_max_chars" /></label>
+                            <label class="ts-field"><span>Context results</span><input type="number" min="1" step="1" x-model.number="config.context_max_results" /></label>
+                            <label class="ts-field ts-field-wide"><span>Definition snippet characters</span><input type="number" min="100" step="100" x-model.number="config.index_snippet_chars" /></label>
+                        </div>
+                        <div class="ts-switch-stack">
+                            <label class="ts-switch-row">
+                                <span class="toggle"><input type="checkbox" x-model="config.auto_context_enabled" aria-label="Add structural context automatically" /><span class="toggler"></span></span>
+                                <span><strong>Automatic coding context</strong><small>Ground the first model call for every active-project task.</small></span>
+                            </label>
+                            <label class="ts-switch-row">
+                                <span class="toggle"><input type="checkbox" x-model="config.auto_refresh_index" aria-label="Refresh changed files for task context" /><span class="toggler"></span></span>
+                                <span><strong>Refresh changed files</strong><small>Incrementally update the index before context is built.</small></span>
+                            </label>
+                        </div>
+                    </section>
+
+                    <section class="ts-config-group" aria-labelledby="tree-sitter-index-title">
+                        <div class="ts-group-heading">
+                            <div><h3 id="tree-sitter-index-title">Parsing and indexing</h3><p>Set repository scan limits and parser budgets.</p></div>
+                        </div>
+                        <div class="ts-field-grid">
+                            <label class="ts-field"><span>Source file bytes</span><input type="number" min="10000" step="10000" x-model.number="config.max_file_bytes" /></label>
+                            <label class="ts-field"><span>Chunk characters</span><input type="number" min="500" step="500" x-model.number="config.max_chunk_chars" /></label>
+                            <label class="ts-field"><span>Parse timeout (ms)</span><input type="number" min="100" step="100" x-model.number="config.parse_timeout_ms" /></label>
+                            <label class="ts-field"><span>Indexed files</span><input type="number" min="1" step="100" x-model.number="config.index_max_files" /></label>
+                        </div>
+                        <div class="ts-switch-stack">
+                            <label class="ts-switch-row">
+                                <span class="toggle"><input type="checkbox" x-model="config.index_include_untracked" aria-label="Include untracked files" /><span class="toggler"></span></span>
+                                <span><strong>Include untracked files</strong><small>Continue honoring repository ignore rules.</small></span>
+                            </label>
+                            <label class="ts-switch-row">
+                                <span class="toggle"><input type="checkbox" x-model="config.index_hidden_files" aria-label="Index hidden source files" /><span class="toggler"></span></span>
+                                <span><strong>Index hidden sources</strong><small>Include hidden files that match supported languages.</small></span>
+                            </label>
+                        </div>
+                    </section>
                 </div>
-                <template x-if="runtime">
-                    <dl class="status-grid">
-                        <div><dt>Status</dt><dd x-text="runtime.ready ? 'Ready' : 'Dependency not provisioned'"></dd></div>
-                        <div><dt>Language pack</dt><dd x-text="runtime.language_pack_version || 'Not installed'"></dd></div>
-                        <div><dt>Languages</dt><dd x-text="runtime.available_language_count || 0"></dd></div>
-                        <div><dt>Cached parsers</dt><dd x-text="runtime.downloaded_languages?.length || 0"></dd></div>
-                    </dl>
-                </template>
-            </section>
 
-            <section class="card plugin-card">
-                <h3>Coding context</h3>
-                <label class="field"><span>Maximum context characters</span>
-                    <input type="number" min="1000" step="1000" x-model.number="config.context_max_chars" />
-                </label>
-                <label class="field"><span>Maximum context results</span>
-                    <input type="number" min="1" step="1" x-model.number="config.context_max_results" />
-                </label>
-                <label class="field"><span>Snippet characters per definition</span>
-                    <input type="number" min="100" step="100" x-model.number="config.index_snippet_chars" />
-                </label>
-                <label class="toggle-field">
-                    <label class="toggle"><input type="checkbox" x-model="config.auto_refresh_index" /><span class="toggler"></span></label>
-                    <span>Refresh changed files when building task context</span>
-                </label>
-            </section>
-
-            <section class="card plugin-card">
-                <h3>Parsing and indexing</h3>
-                <label class="field"><span>Maximum source file bytes</span>
-                    <input type="number" min="10000" step="10000" x-model.number="config.max_file_bytes" />
-                </label>
-                <label class="field"><span>Chunk character budget</span>
-                    <input type="number" min="500" step="500" x-model.number="config.max_chunk_chars" />
-                </label>
-                <label class="field"><span>Parse timeout (milliseconds)</span>
-                    <input type="number" min="100" step="100" x-model.number="config.parse_timeout_ms" />
-                </label>
-                <label class="field"><span>Maximum indexed files</span>
-                    <input type="number" min="1" step="100" x-model.number="config.index_max_files" />
-                </label>
-                <label class="toggle-field">
-                    <label class="toggle"><input type="checkbox" x-model="config.index_include_untracked" /><span class="toggler"></span></label>
-                    <span>Include untracked files while honoring .gitignore</span>
-                </label>
-                <label class="toggle-field">
-                    <label class="toggle"><input type="checkbox" x-model="config.index_hidden_files" /><span class="toggler"></span></label>
-                    <span>Index hidden source files</span>
-                </label>
-            </section>
-
-            <section class="card plugin-card">
-                <h3>Repository boundary</h3>
-                <p>File inspection is restricted to the active project by default.</p>
-                <label class="toggle-field">
-                    <label class="toggle"><input type="checkbox" x-model="config.allow_outside_project" /><span class="toggler"></span></label>
-                    <span>Allow explicit file paths outside the active project</span>
-                </label>
-                <button class="btn btn-primary" @click="openModal('/plugins/tree_sitter/webui/tree-sitter-inspector.html')">
-                    <x-icon name="manage_search"></x-icon> Open Code Intelligence
-                </button>
+                <section class="ts-boundary" aria-labelledby="tree-sitter-boundary-title">
+                    <div class="ts-boundary-copy">
+                        <span class="ts-boundary-icon" aria-hidden="true"><x-icon name="shield_lock"></x-icon></span>
+                        <div><h3 id="tree-sitter-boundary-title">Repository boundary</h3><p>Inspection stays inside the active project unless an explicit outside path is allowed.</p></div>
+                    </div>
+                    <label class="ts-switch-row ts-boundary-toggle">
+                        <span class="toggle"><input type="checkbox" x-model="config.allow_outside_project" aria-label="Allow paths outside the active project" /><span class="toggler"></span></span>
+                        <span><strong>Allow outside paths</strong></span>
+                    </label>
+                    <button class="btn btn-primary ts-open-intelligence" type="button" @click="openModal('/plugins/tree_sitter/webui/tree-sitter-inspector.html')">
+                        <x-icon name="manage_search"></x-icon><span>Open Code Intelligence</span>
+                    </button>
+                </section>
             </section>
         </div>
-        <style>
-            .tree-sitter-settings { display: grid; gap: 1rem; }
-            .tree-sitter-settings .plugin-card { display: grid; gap: .8rem; }
-            .tree-sitter-settings .section-title { display: flex; gap: .75rem; align-items: flex-start; }
-            .tree-sitter-settings h3, .tree-sitter-settings p { margin: 0; }
-            .tree-sitter-settings .field { display: grid; gap: .35rem; }
-            .tree-sitter-settings .toggle-field { display: flex; gap: .65rem; align-items: center; }
-            .tree-sitter-settings .status-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: .65rem; margin: 0; }
-            .tree-sitter-settings .status-grid div { padding: .7rem; border: 1px solid var(--color-border); border-radius: var(--border-radius); }
-            .tree-sitter-settings dt { opacity: .7; font-size: .8rem; }
-            .tree-sitter-settings dd { margin: .2rem 0 0; font-weight: 600; }
-        </style>
     </template>
+
+    <style>
+        .tree-sitter-settings {
+            --ts-accent: #78d6b2;
+            --ts-accent-strong: #3dbf91;
+            --ts-accent-soft: color-mix(in srgb, var(--ts-accent) 12%, transparent);
+            color: var(--color-text);
+            animation: ts-settings-enter 240ms ease-out both;
+        }
+        .tree-sitter-settings *, .tree-sitter-settings *::before, .tree-sitter-settings *::after { box-sizing: border-box; }
+        .tree-sitter-settings .ts-console { overflow: hidden; border: 1px solid var(--color-border); border-radius: 14px; background: var(--color-panel); }
+        .tree-sitter-settings h2, .tree-sitter-settings h3, .tree-sitter-settings p, .tree-sitter-settings dl { margin: 0; }
+        .tree-sitter-settings h2, .tree-sitter-settings h3, .tree-sitter-settings strong { color: var(--color-text); }
+        .tree-sitter-settings .ts-runtime-head { display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; padding: 1rem 1.1rem .85rem; }
+        .tree-sitter-settings .ts-runtime-identity, .tree-sitter-settings .ts-group-heading, .tree-sitter-settings .ts-boundary-copy { display: flex; align-items: flex-start; gap: .75rem; min-width: 0; }
+        .tree-sitter-settings .ts-runtime-icon, .tree-sitter-settings .ts-boundary-icon { display: grid; flex: 0 0 auto; place-items: center; width: 2rem; height: 2rem; border: 1px solid color-mix(in srgb, var(--ts-accent) 38%, var(--color-border)); border-radius: 9px; color: var(--ts-accent); background: var(--ts-accent-soft); }
+        .tree-sitter-settings .ts-runtime-icon x-icon, .tree-sitter-settings .ts-boundary-icon x-icon { width: 1.05rem; height: 1.05rem; }
+        .tree-sitter-settings .ts-runtime-head h2 { font-size: 1.02rem; line-height: 1.25; letter-spacing: -.01em; }
+        .tree-sitter-settings .ts-runtime-head p, .tree-sitter-settings .ts-group-heading p, .tree-sitter-settings .ts-boundary p { margin-top: .18rem; color: var(--color-text-muted); font-size: .79rem; line-height: 1.4; }
+        .tree-sitter-settings .ts-status-pill { display: inline-flex; align-items: center; gap: .45rem; min-height: 1.8rem; padding: .3rem .65rem; border: 1px solid var(--color-border); border-radius: 999px; color: var(--color-text-muted); background: var(--color-background); font-size: .75rem; font-weight: 700; white-space: nowrap; }
+        .tree-sitter-settings .ts-status-pill.is-ready { border-color: color-mix(in srgb, var(--ts-accent) 42%, var(--color-border)); color: var(--ts-accent); background: var(--ts-accent-soft); }
+        .tree-sitter-settings .ts-status-pill.is-missing { color: var(--color-warning, #e5ad54); }
+        .tree-sitter-settings .ts-status-dot { width: .45rem; height: .45rem; border-radius: 50%; background: currentColor; box-shadow: 0 0 0 3px color-mix(in srgb, currentColor 14%, transparent); }
+        .tree-sitter-settings .ts-runtime-facts, .tree-sitter-settings .ts-runtime-message { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border-top: 1px solid var(--color-border); border-bottom: 1px solid var(--color-border); background: color-mix(in srgb, var(--color-background) 58%, transparent); }
+        .tree-sitter-settings .ts-runtime-facts > div { min-width: 0; padding: .72rem 1.1rem; }
+        .tree-sitter-settings .ts-runtime-facts > div + div { border-left: 1px solid var(--color-border); }
+        .tree-sitter-settings .ts-runtime-facts dt { color: var(--color-text-muted); font-size: .7rem; line-height: 1.2; }
+        .tree-sitter-settings .ts-runtime-facts dd { overflow: hidden; margin: .2rem 0 0; color: var(--color-text); font-size: .92rem; font-weight: 700; line-height: 1.2; text-overflow: ellipsis; white-space: nowrap; font-variant-numeric: tabular-nums; }
+        .tree-sitter-settings .ts-runtime-message { gap: 1px; padding: .8rem 1.1rem; }
+        .tree-sitter-settings .ts-runtime-message span { height: 1.5rem; border-radius: 5px; background: color-mix(in srgb, var(--color-text-muted) 12%, transparent); }
+        .tree-sitter-settings .ts-runtime-error { padding: .7rem 1.1rem; border-top: 1px solid var(--color-border); border-bottom: 1px solid var(--color-border); color: var(--color-warning, #e5ad54); font-size: .78rem; }
+        .tree-sitter-settings .ts-settings-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .tree-sitter-settings .ts-config-group { padding: 1rem 1.1rem 1.05rem; }
+        .tree-sitter-settings .ts-config-group + .ts-config-group { border-left: 1px solid var(--color-border); }
+        .tree-sitter-settings .ts-group-heading h3, .tree-sitter-settings .ts-boundary h3 { font-size: .88rem; line-height: 1.25; }
+        .tree-sitter-settings .ts-field-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .7rem; margin-top: .9rem; }
+        .tree-sitter-settings .ts-field { display: grid; min-width: 0; gap: .32rem; color: var(--color-text-muted); font-size: .72rem; font-weight: 650; }
+        .tree-sitter-settings .ts-field-wide { grid-column: 1 / -1; }
+        .tree-sitter-settings .ts-field input { width: 100%; min-width: 0; height: 2.2rem; padding: 0 .65rem; border: 1px solid var(--color-border); border-radius: 8px; color: var(--color-text); background: var(--color-input, var(--color-background)); font-size: .82rem; font-variant-numeric: tabular-nums; }
+        .tree-sitter-settings .ts-field input:hover { border-color: color-mix(in srgb, var(--color-text-muted) 45%, var(--color-border)); }
+        .tree-sitter-settings .ts-field input:focus-visible, .tree-sitter-settings .ts-switch-row:has(input:focus-visible), .tree-sitter-settings .ts-open-intelligence:focus-visible { outline: 2px solid var(--ts-accent-strong); outline-offset: 2px; }
+        .tree-sitter-settings .ts-switch-stack { display: grid; margin-top: .72rem; }
+        .tree-sitter-settings .ts-switch-row { display: flex; align-items: center; gap: .65rem; min-width: 0; margin-top: .75rem; cursor: pointer; }
+        .tree-sitter-settings .ts-switch-stack .ts-switch-row { margin: 0; padding: .62rem 0; border-top: 1px solid var(--color-border); }
+        .tree-sitter-settings .ts-switch-row > span:last-child { display: grid; min-width: 0; gap: .08rem; }
+        .tree-sitter-settings .ts-switch-row strong { font-size: .76rem; line-height: 1.3; }
+        .tree-sitter-settings .ts-switch-row small { color: var(--color-text-muted); font-size: .68rem; line-height: 1.35; }
+        .tree-sitter-settings .toggle { flex: 0 0 auto; width: 2.35rem; height: 1.35rem; }
+        .tree-sitter-settings .toggler { border-radius: 999px; transition: background-color 150ms ease; }
+        .tree-sitter-settings .toggler::before { width: .95rem; height: .95rem; left: .2rem; bottom: .2rem; transition: transform 150ms ease; }
+        .tree-sitter-settings input:checked + .toggler { background: var(--ts-accent-strong); }
+        .tree-sitter-settings input:checked + .toggler::before { transform: translateX(1rem); }
+        .tree-sitter-settings .ts-boundary { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 1rem; padding: .9rem 1.1rem; border-top: 1px solid var(--color-border); background: color-mix(in srgb, var(--color-background) 38%, transparent); }
+        .tree-sitter-settings .ts-boundary-icon { width: 1.8rem; height: 1.8rem; border-color: var(--color-border); color: var(--color-text-muted); background: transparent; }
+        .tree-sitter-settings .ts-boundary-toggle { margin: 0; white-space: nowrap; }
+        .tree-sitter-settings .ts-open-intelligence { display: inline-flex; align-items: center; justify-content: center; gap: .42rem; min-height: 2.35rem; white-space: nowrap; }
+        .light-mode .tree-sitter-settings { --ts-accent: #147a5b; --ts-accent-strong: #16805f; }
+
+        @keyframes ts-settings-enter { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+        @media (max-width: 760px) {
+            .tree-sitter-settings .ts-runtime-head, .tree-sitter-settings .ts-boundary { align-items: flex-start; }
+            .tree-sitter-settings .ts-runtime-head { flex-direction: column; gap: .8rem; }
+            .tree-sitter-settings .ts-runtime-facts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .tree-sitter-settings .ts-runtime-facts > div:nth-child(3) { border-left: 0; }
+            .tree-sitter-settings .ts-runtime-facts > div:nth-child(n + 3) { border-top: 1px solid var(--color-border); }
+            .tree-sitter-settings .ts-settings-grid { grid-template-columns: 1fr; }
+            .tree-sitter-settings .ts-config-group + .ts-config-group { border-top: 1px solid var(--color-border); border-left: 0; }
+            .tree-sitter-settings .ts-boundary { grid-template-columns: 1fr; }
+            .tree-sitter-settings .ts-boundary-toggle { margin-top: 0; }
+            .tree-sitter-settings .ts-open-intelligence { width: 100%; }
+        }
+        @media (max-width: 430px) { .tree-sitter-settings .ts-field-grid { grid-template-columns: 1fr; } .tree-sitter-settings .ts-field-wide { grid-column: auto; } }
+        @media (prefers-reduced-motion: reduce) { .tree-sitter-settings { animation: none; } .tree-sitter-settings .toggler, .tree-sitter-settings .toggler::before { transition: none; } }
+    </style>
 </div>

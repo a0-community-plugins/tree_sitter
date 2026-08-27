@@ -1,7 +1,7 @@
 name: tree_sitter
 title: Tree-sitter
 description: Repository-scale structural intelligence, coding context, references, and syntax diagnostics.
-version: 1.0.0
+version: 1.1.0
 settings_sections:
   - agent
 per_project_config: true

@@ -7,7 +7,7 @@ description: Use Tree-sitter repository intelligence to investigate, change, and
 
 Use this workflow for non-trivial code changes when the `tree_sitter` tool is available.
 
-1. Call `tree_sitter:context` with the task and, when known, the primary symbol. This lazily refreshes the project index and returns the most relevant definitions, imports, references, and bounded snippets.
+1. Start from the automatic Tree-sitter context supplied for the active project. Call `tree_sitter:context` with the task and, when known, the primary symbol only when you need to refresh or refine that bounded context.
 2. Use `tree_sitter:search` for exact definitions and `tree_sitter:references` before changing a public or shared symbol. Treat references as structural candidates, not type-resolved proof.
 3. Use ordinary text search and file reading for comments, strings, generated code, configuration, and semantics Tree-sitter cannot infer.
 4. Make the smallest coherent edit with the normal editing tools.

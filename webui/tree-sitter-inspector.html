@@ -1,3 +1,11 @@
+<!--
+THESIS: Code Intelligence behaves like one focused repository instrument, not a dashboard of disconnected forms.
+OWN-WORLD: Agent Zero surfaces, mint runtime truth, compact command bars, deliberate dividers, and code-native result handling.
+STORY: Establish the repository, choose a coding task or file inspection, execute, then work from one persistent result dock.
+FIRST VIEWPORT: Runtime and repository controls stay above the fold, with both core workflows visible side by side and aligned by intent.
+FORM: A continuous developer workbench inside Agent Zero's protected-focus modal; direction key: local-extension-tree-sitter-inspector.
+FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, DESIGN.md, and every shipping raster carrying its provenance
+-->
 <html>
 <head>
     <title>Tree-sitter Code Intelligence</title>
@@ -8,114 +16,231 @@
 <body>
     <div x-data>
         <template x-if="$store.treeSitterInspector">
-            <main x-create="$store.treeSitterInspector.onOpen()"
-                x-destroy="$store.treeSitterInspector.cleanup()" class="tree-sitter-workbench">
-                <header class="workbench-header">
-                    <div>
-                        <p class="eyebrow">STRUCTURAL CODING</p>
-                        <h2>Code Intelligence</h2>
-                        <p>Build focused repository context, inspect syntax, and verify changed files.</p>
+            <main
+                x-create="$store.treeSitterInspector.onOpen()"
+                x-destroy="$store.treeSitterInspector.cleanup()"
+                class="tree-sitter-workbench"
+            >
+                <header class="ci-header">
+                    <div class="ci-title-lockup">
+                        <span class="ci-mark" aria-hidden="true"><x-icon name="account_tree"></x-icon></span>
+                        <div>
+                            <h2>Code Intelligence</h2>
+                            <p>Manual workspace for deeper context, syntax inspection, and index diagnostics.</p>
+                        </div>
                     </div>
-                    <div class="runtime-pill"
-                        :class="$store.treeSitterInspector.runtime?.ready ? 'ready' : 'missing'">
-                        <span class="status-dot"></span>
-                        <span x-text="$store.treeSitterInspector.runtime?.ready ? 'Runtime ready' : 'Runtime unavailable'"></span>
+                    <div class="ci-runtime" aria-live="polite">
+                        <span class="ci-runtime-pill is-checking" x-show="$store.treeSitterInspector.runtimeLoading">
+                            <span class="ci-status-dot"></span> Checking runtime
+                        </span>
+                        <span
+                            class="ci-runtime-pill"
+                            x-show="!$store.treeSitterInspector.runtimeLoading"
+                            :class="$store.treeSitterInspector.runtime?.ready ? 'is-ready' : 'is-missing'"
+                        >
+                            <span class="ci-status-dot"></span>
+                            <span x-text="$store.treeSitterInspector.runtime?.ready ? 'Runtime ready' : 'Runtime unavailable'"></span>
+                        </span>
                     </div>
                 </header>
 
-                <section class="panel repo-panel">
-                    <label class="field grow"><span>Repository root</span>
-                        <input type="text" x-model="$store.treeSitterInspector.rootPath" placeholder="/absolute/path/to/repository" />
+                <section class="ci-repository" aria-labelledby="ci-repository-title">
+                    <div class="ci-repository-label">
+                        <x-icon name="folder_open"></x-icon>
+                        <div><h3 id="ci-repository-title">Repository</h3><p>Absolute project root used by every operation below.</p></div>
+                    </div>
+                    <label class="ci-field ci-root-field">
+                        <span class="sr-only">Repository root</span>
+                        <input type="text" x-model="$store.treeSitterInspector.rootPath" placeholder="/absolute/path/to/repository" autocomplete="off" spellcheck="false" />
                     </label>
-                    <div class="actions bottom">
-                        <button class="btn" @click="$store.treeSitterInspector.refreshIndexStatus()"
-                            :disabled="$store.treeSitterInspector.busy">Status</button>
-                        <button class="btn btn-primary" @click="$store.treeSitterInspector.reindex(false)"
-                            :disabled="$store.treeSitterInspector.busy">
+                    <div class="ci-repository-actions">
+                        <button class="btn ci-icon-button" type="button" title="Check index status" aria-label="Check index status"
+                            @click="$store.treeSitterInspector.refreshIndexStatus()" :disabled="$store.treeSitterInspector.busy || !$store.treeSitterInspector.rootPath">
+                            <x-icon name="monitoring"></x-icon>
+                        </button>
+                        <button class="btn btn-primary" type="button" @click="$store.treeSitterInspector.reindex(false)"
+                            :disabled="$store.treeSitterInspector.busy || !$store.treeSitterInspector.rootPath">
                             <x-icon name="refresh"></x-icon>
                             <span x-text="$store.treeSitterInspector.busy === 'index' ? 'Indexing…' : 'Refresh index'"></span>
                         </button>
                     </div>
                 </section>
 
-                <div class="workbench-grid">
-                    <section class="panel">
-                        <p class="eyebrow">PLAN</p>
-                        <h3>Build coding context</h3>
-                        <label class="field"><span>Task</span>
-                            <textarea rows="4" x-model="$store.treeSitterInspector.task"
-                                placeholder="Describe the change or investigation"></textarea>
+                <p class="ci-inline-error" role="alert" x-show="$store.treeSitterInspector.lastError" x-text="$store.treeSitterInspector.lastError"></p>
+
+                <div class="ci-tools">
+                    <section class="ci-tool ci-context-tool" aria-labelledby="ci-context-title">
+                        <div class="ci-tool-heading">
+                            <span class="ci-tool-icon" aria-hidden="true"><x-icon name="neurology"></x-icon></span>
+                            <div><h3 id="ci-context-title">Build coding context</h3><p>Ground an implementation or investigation in repository structure.</p></div>
+                        </div>
+                        <label class="ci-field">
+                            <span>Coding task</span>
+                            <textarea rows="3" x-model="$store.treeSitterInspector.task" placeholder="Describe the change or investigation"></textarea>
                         </label>
-                        <label class="field"><span>Primary symbol (optional)</span>
-                            <input type="text" x-model="$store.treeSitterInspector.symbol" placeholder="AgentContext" />
+                        <label class="ci-field">
+                            <span>Primary symbol <small>optional</small></span>
+                            <input type="text" x-model="$store.treeSitterInspector.symbol" placeholder="AgentContext" autocomplete="off" spellcheck="false" />
                         </label>
-                        <div class="actions">
-                            <button class="btn btn-primary" @click="$store.treeSitterInspector.buildContext()"
-                                :disabled="$store.treeSitterInspector.busy">Build context</button>
-                            <button class="btn" @click="$store.treeSitterInspector.search()"
-                                :disabled="$store.treeSitterInspector.busy || !$store.treeSitterInspector.symbol">Find definitions</button>
+                        <div class="ci-actions">
+                            <button class="btn btn-primary" type="button" @click="$store.treeSitterInspector.buildContext()"
+                                :disabled="$store.treeSitterInspector.busy || !$store.treeSitterInspector.rootPath || !$store.treeSitterInspector.task">
+                                <x-icon name="account_tree"></x-icon>
+                                <span x-text="$store.treeSitterInspector.busy === 'context' ? 'Building…' : 'Build context'"></span>
+                            </button>
+                            <button class="btn" type="button" @click="$store.treeSitterInspector.search()"
+                                :disabled="$store.treeSitterInspector.busy || !$store.treeSitterInspector.rootPath || !$store.treeSitterInspector.symbol">
+                                Find definitions
+                            </button>
                         </div>
                     </section>
 
-                    <section class="panel">
-                        <p class="eyebrow">INSPECT</p>
-                        <h3>Analyze a source file</h3>
-                        <label class="field"><span>File path</span>
-                            <input type="text" x-model="$store.treeSitterInspector.filePath" placeholder="relative/or/absolute.py" />
+                    <section class="ci-tool ci-inspect-tool" aria-labelledby="ci-inspect-title">
+                        <div class="ci-tool-heading">
+                            <span class="ci-tool-icon" aria-hidden="true"><x-icon name="data_object"></x-icon></span>
+                            <div><h3 id="ci-inspect-title">Inspect a source file</h3><p>Parse one file, surface syntax diagnostics, or run a structural query.</p></div>
+                        </div>
+                        <label class="ci-field">
+                            <span>File path</span>
+                            <input type="text" x-model="$store.treeSitterInspector.filePath" placeholder="src/agent.py" autocomplete="off" spellcheck="false" />
                         </label>
-                        <div class="two-columns">
-                            <label class="field"><span>Language override</span>
-                                <input type="text" x-model="$store.treeSitterInspector.language" placeholder="auto" />
+                        <div class="ci-field-row">
+                            <label class="ci-field ci-language-field">
+                                <span>Language <small>optional</small></span>
+                                <input type="text" x-model="$store.treeSitterInspector.language" placeholder="auto" autocomplete="off" spellcheck="false" />
                             </label>
-                            <label class="field"><span>Optional S-expression query</span>
-                                <input type="text" x-model="$store.treeSitterInspector.query" placeholder="(function_definition) @fn" />
+                            <label class="ci-field">
+                                <span>S-expression query <small>optional</small></span>
+                                <input type="text" x-model="$store.treeSitterInspector.query" placeholder="(function_definition) @fn" autocomplete="off" spellcheck="false" />
                             </label>
                         </div>
-                        <button class="btn btn-primary" @click="$store.treeSitterInspector.inspectFile()"
-                            :disabled="$store.treeSitterInspector.busy">Inspect file</button>
+                        <div class="ci-actions">
+                            <button class="btn btn-primary" type="button" @click="$store.treeSitterInspector.inspectFile()"
+                                :disabled="$store.treeSitterInspector.busy || !$store.treeSitterInspector.rootPath || !$store.treeSitterInspector.filePath">
+                                <x-icon name="manage_search"></x-icon>
+                                <span x-text="$store.treeSitterInspector.busy === 'inspect' ? 'Inspecting…' : 'Inspect file'"></span>
+                            </button>
+                        </div>
                     </section>
                 </div>
 
-                <section class="result-grid" x-show="$store.treeSitterInspector.indexStatus || $store.treeSitterInspector.searchResult || $store.treeSitterInspector.contextResult || $store.treeSitterInspector.inspection">
-                    <article class="panel result" x-show="$store.treeSitterInspector.contextResult">
-                        <h3>Coding context</h3><pre x-text="$store.treeSitterInspector.formatJson($store.treeSitterInspector.contextResult)"></pre>
-                    </article>
-                    <article class="panel result" x-show="$store.treeSitterInspector.searchResult">
-                        <h3>Definition search</h3><pre x-text="$store.treeSitterInspector.formatJson($store.treeSitterInspector.searchResult)"></pre>
-                    </article>
-                    <article class="panel result" x-show="$store.treeSitterInspector.inspection">
-                        <h3>File analysis</h3><pre x-text="$store.treeSitterInspector.formatJson($store.treeSitterInspector.inspection)"></pre>
-                    </article>
-                    <article class="panel result" x-show="$store.treeSitterInspector.indexStatus">
-                        <h3>Index status</h3><pre x-text="$store.treeSitterInspector.formatJson($store.treeSitterInspector.indexStatus)"></pre>
-                    </article>
+                <section class="ci-results" x-show="$store.treeSitterInspector.hasResults()" aria-labelledby="ci-results-title">
+                    <header class="ci-results-head">
+                        <div><h3 id="ci-results-title">Results</h3><p>Most recent structural output, preserved while you compare operations.</p></div>
+                        <div class="ci-results-actions">
+                            <button class="btn ci-text-button" type="button" @click="$store.treeSitterInspector.copyCurrentResult()" :disabled="!$store.treeSitterInspector.currentResult()">
+                                <x-icon name="content_copy"></x-icon> Copy JSON
+                            </button>
+                            <button class="btn ci-icon-button" type="button" aria-label="Clear results" title="Clear results" @click="$store.treeSitterInspector.clearResults()">
+                                <x-icon name="close"></x-icon>
+                            </button>
+                        </div>
+                    </header>
+                    <nav class="ci-result-tabs" aria-label="Code intelligence results">
+                        <button type="button" x-show="$store.treeSitterInspector.contextResult" @click="$store.treeSitterInspector.resultView = 'context'" :aria-current="$store.treeSitterInspector.resultView === 'context' ? 'page' : null">Coding context</button>
+                        <button type="button" x-show="$store.treeSitterInspector.searchResult" @click="$store.treeSitterInspector.resultView = 'search'" :aria-current="$store.treeSitterInspector.resultView === 'search' ? 'page' : null">Definitions</button>
+                        <button type="button" x-show="$store.treeSitterInspector.inspection" @click="$store.treeSitterInspector.resultView = 'inspection'" :aria-current="$store.treeSitterInspector.resultView === 'inspection' ? 'page' : null">File analysis</button>
+                        <button type="button" x-show="$store.treeSitterInspector.indexStatus" @click="$store.treeSitterInspector.resultView = 'index'" :aria-current="$store.treeSitterInspector.resultView === 'index' ? 'page' : null">Index status</button>
+                    </nav>
+                    <pre tabindex="0" x-text="$store.treeSitterInspector.formatJson($store.treeSitterInspector.currentResult())"></pre>
                 </section>
             </main>
         </template>
     </div>
+
     <style>
-        .tree-sitter-workbench { --ts-accent: #78d6b2; display: grid; gap: 1rem; padding: 1rem; max-width: 1180px; margin: 0 auto; }
-        .workbench-header { display: flex; justify-content: space-between; gap: 1rem; align-items: flex-start; padding: .5rem .2rem; }
-        .workbench-header h2, .workbench-header p, .panel h3 { margin: 0; }
-        .workbench-header > div:first-child { display: grid; gap: .3rem; }
-        .eyebrow { color: var(--ts-accent); font-size: .72rem; font-weight: 700; letter-spacing: .13em; }
-        .runtime-pill { display: flex; gap: .5rem; align-items: center; padding: .5rem .7rem; border: 1px solid var(--color-border); border-radius: 999px; white-space: nowrap; }
-        .status-dot { width: .55rem; height: .55rem; border-radius: 50%; background: #d26a6a; }
-        .runtime-pill.ready .status-dot { background: var(--ts-accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--ts-accent) 20%, transparent); }
-        .panel { display: grid; gap: .75rem; padding: 1rem; border: 1px solid var(--color-border); border-radius: var(--border-radius); background: var(--color-panel); }
-        .repo-panel { grid-template-columns: 1fr auto; align-items: end; }
-        .workbench-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
-        .result-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
-        .field { display: grid; gap: .35rem; }
-        .two-columns { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .75rem; }
-        .actions { display: flex; flex-wrap: wrap; gap: .6rem; }
-        .actions.bottom { align-items: end; }
-        .result { min-height: 12rem; }
-        pre { margin: 0; padding: .8rem; max-height: 32rem; overflow: auto; background: color-mix(in srgb, #000 18%, transparent); border-radius: var(--border-radius); white-space: pre-wrap; overflow-wrap: anywhere; font-size: .78rem; }
-        @media (max-width: 760px) {
-            .workbench-header, .repo-panel { display: grid; grid-template-columns: 1fr; }
-            .workbench-grid, .result-grid, .two-columns { grid-template-columns: 1fr; }
+        .tree-sitter-workbench {
+            --ci-accent: #78d6b2;
+            --ci-accent-strong: #3dbf91;
+            --ci-accent-soft: color-mix(in srgb, var(--ci-accent) 12%, transparent);
+            display: grid;
+            width: 100%;
+            max-width: 1120px;
+            margin: 0 auto;
+            color: var(--color-text);
+            background: var(--color-panel);
+            animation: ci-workbench-enter 240ms cubic-bezier(.16, 1, .3, 1) both;
         }
+        .tree-sitter-workbench *, .tree-sitter-workbench *::before, .tree-sitter-workbench *::after { box-sizing: border-box; }
+        .tree-sitter-workbench ::selection { color: var(--color-background); background: var(--ci-accent); }
+        .tree-sitter-workbench h2, .tree-sitter-workbench h3, .tree-sitter-workbench p { margin: 0; }
+        .tree-sitter-workbench h2, .tree-sitter-workbench h3 { color: var(--color-text); }
+        .tree-sitter-workbench .sr-only { position: absolute; overflow: hidden; width: 1px; height: 1px; padding: 0; margin: -1px; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+
+        .tree-sitter-workbench .ci-header { display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; padding: 1.05rem 1.2rem; border-bottom: 1px solid var(--color-border); }
+        .tree-sitter-workbench .ci-title-lockup, .tree-sitter-workbench .ci-repository-label, .tree-sitter-workbench .ci-tool-heading { display: flex; align-items: flex-start; gap: .75rem; min-width: 0; }
+        .tree-sitter-workbench .ci-mark, .tree-sitter-workbench .ci-tool-icon { display: grid; flex: 0 0 auto; place-items: center; width: 2rem; height: 2rem; border: 1px solid color-mix(in srgb, var(--ci-accent) 38%, var(--color-border)); border-radius: 9px; color: var(--ci-accent); background: var(--ci-accent-soft); }
+        .tree-sitter-workbench .ci-mark x-icon, .tree-sitter-workbench .ci-tool-icon x-icon { width: 1.05rem; height: 1.05rem; }
+        .tree-sitter-workbench .ci-header h2 { font-size: 1.25rem; line-height: 1.18; letter-spacing: -.02em; }
+        .tree-sitter-workbench .ci-header p, .tree-sitter-workbench .ci-tool-heading p, .tree-sitter-workbench .ci-repository-label p, .tree-sitter-workbench .ci-results-head p { margin-top: .18rem; color: var(--color-text-muted); font-size: .75rem; line-height: 1.4; }
+        .tree-sitter-workbench .ci-runtime-pill { display: inline-flex; align-items: center; gap: .45rem; min-height: 1.8rem; padding: .3rem .65rem; border: 1px solid var(--color-border); border-radius: 999px; color: var(--color-text-muted); background: var(--color-background); font-size: .75rem; font-weight: 700; white-space: nowrap; }
+        .tree-sitter-workbench .ci-runtime-pill.is-ready { border-color: color-mix(in srgb, var(--ci-accent) 42%, var(--color-border)); color: var(--ci-accent); background: var(--ci-accent-soft); }
+        .tree-sitter-workbench .ci-runtime-pill.is-missing { color: var(--color-warning, #e5ad54); }
+        .tree-sitter-workbench .ci-status-dot { width: .45rem; height: .45rem; border-radius: 50%; color: inherit; background: currentColor; box-shadow: 0 0 0 3px color-mix(in srgb, currentColor 14%, transparent); }
+
+        .tree-sitter-workbench .ci-repository { display: grid; grid-template-columns: minmax(11rem, .6fr) minmax(16rem, 1.4fr) auto; align-items: center; gap: 1rem; padding: .85rem 1.2rem; border-bottom: 1px solid var(--color-border); background: color-mix(in srgb, var(--color-background) 48%, transparent); }
+        .tree-sitter-workbench .ci-repository-label { align-items: center; }
+        .tree-sitter-workbench .ci-repository-label > x-icon { flex: 0 0 auto; width: 1rem; color: var(--ci-accent); }
+        .tree-sitter-workbench .ci-repository-label h3 { font-size: .9375rem; }
+        .tree-sitter-workbench .ci-repository-actions, .tree-sitter-workbench .ci-actions, .tree-sitter-workbench .ci-results-actions { display: flex; align-items: center; gap: .5rem; }
+
+        .tree-sitter-workbench .ci-field { display: grid; min-width: 0; gap: .34rem; color: var(--color-text-muted); font-size: .75rem; font-weight: 650; }
+        .tree-sitter-workbench .ci-field span small { opacity: .72; font-size: .75rem; font-weight: 500; }
+        .tree-sitter-workbench .ci-field input, .tree-sitter-workbench .ci-field textarea { width: 100%; min-width: 0; border: 1px solid var(--color-border); border-radius: 8px; color: var(--color-text); background: var(--color-input, var(--color-background)); font-size: .75rem; line-height: 1.4; caret-color: var(--ci-accent); }
+        .tree-sitter-workbench .ci-field input { height: 2.25rem; padding: 0 .65rem; }
+        .tree-sitter-workbench .ci-field textarea { min-height: 5.45rem; padding: .58rem .65rem; resize: vertical; }
+        .tree-sitter-workbench .ci-field input::placeholder, .tree-sitter-workbench .ci-field textarea::placeholder { color: color-mix(in srgb, var(--color-text-muted) 82%, transparent); opacity: 1; }
+        .tree-sitter-workbench .ci-field input:hover, .tree-sitter-workbench .ci-field textarea:hover { border-color: color-mix(in srgb, var(--color-text-muted) 45%, var(--color-border)); }
+
+        .tree-sitter-workbench .ci-icon-button { display: inline-grid; place-items: center; width: 2.25rem; min-width: 2.25rem; height: 2.25rem; padding: 0; }
+        .tree-sitter-workbench .ci-icon-button x-icon { width: 1rem; }
+        .tree-sitter-workbench .ci-repository-actions .btn, .tree-sitter-workbench .ci-actions .btn { min-height: 2.25rem; }
+        .tree-sitter-workbench .btn:disabled { cursor: not-allowed; filter: none; opacity: .42; }
+
+        .tree-sitter-workbench .ci-inline-error { padding: .62rem 1.2rem; border-bottom: 1px solid var(--color-border); color: var(--color-warning, #e5ad54); background: color-mix(in srgb, var(--color-warning, #e5ad54) 7%, transparent); font-size: .75rem; }
+        .tree-sitter-workbench .ci-tools { display: grid; grid-template-columns: .92fr 1.08fr; }
+        .tree-sitter-workbench .ci-tool { display: grid; align-content: start; gap: .78rem; min-width: 0; padding: 1.1rem 1.2rem 1.2rem; }
+        .tree-sitter-workbench .ci-tool + .ci-tool { border-left: 1px solid var(--color-border); }
+        .tree-sitter-workbench .ci-tool-heading { min-height: 3.3rem; }
+        .tree-sitter-workbench .ci-tool-heading h3 { font-size: .9375rem; line-height: 1.25; }
+        .tree-sitter-workbench .ci-tool-icon { width: 1.8rem; height: 1.8rem; border-color: var(--color-border); color: var(--color-text-muted); background: transparent; }
+        .tree-sitter-workbench .ci-field-row { display: grid; grid-template-columns: minmax(7rem, .42fr) minmax(0, 1fr); gap: .68rem; }
+        .tree-sitter-workbench .ci-actions { align-self: end; margin-top: .12rem; }
+
+        .tree-sitter-workbench .ci-results { min-width: 0; border-top: 1px solid var(--color-border); background: color-mix(in srgb, var(--color-background) 35%, transparent); }
+        .tree-sitter-workbench .ci-results-head { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: .85rem 1.2rem .72rem; }
+        .tree-sitter-workbench .ci-results-head h3 { font-size: .9375rem; }
+        .tree-sitter-workbench .ci-text-button { display: inline-flex; align-items: center; gap: .38rem; min-height: 2.15rem; }
+        .tree-sitter-workbench .ci-result-tabs { display: flex; gap: 1.1rem; overflow-x: auto; padding: 0 1.2rem; border-bottom: 1px solid var(--color-border); scrollbar-color: var(--color-border) transparent; scrollbar-width: thin; }
+        .tree-sitter-workbench .ci-result-tabs button { position: relative; flex: 0 0 auto; padding: .55rem 0 .62rem; border: 0; color: var(--color-text-muted); background: transparent; font: inherit; font-size: .75rem; font-weight: 700; cursor: pointer; }
+        .tree-sitter-workbench .ci-result-tabs button[aria-current="page"] { color: var(--ci-accent); }
+        .tree-sitter-workbench .ci-result-tabs button[aria-current="page"]::after { content: ""; position: absolute; right: 0; bottom: -1px; left: 0; height: 2px; background: var(--ci-accent); }
+        .tree-sitter-workbench .ci-results pre { overflow: auto; max-height: 25rem; margin: 0; padding: 1rem 1.2rem; color: var(--color-text); background: color-mix(in srgb, #000 14%, transparent); font-family: var(--font-family-monospace, ui-monospace, SFMono-Regular, Menlo, monospace); font-size: .75rem; line-height: 1.55; white-space: pre-wrap; overflow-wrap: anywhere; tab-size: 2; scrollbar-color: var(--color-border) transparent; scrollbar-width: thin; }
+
+        .tree-sitter-workbench .ci-field input:focus-visible, .tree-sitter-workbench .ci-field textarea:focus-visible, .tree-sitter-workbench button:focus-visible, .tree-sitter-workbench .ci-results pre:focus-visible { outline: 2px solid var(--ci-accent-strong); outline-offset: 2px; }
+        .light-mode .tree-sitter-workbench { --ci-accent: #147a5b; --ci-accent-strong: #16805f; }
+
+        @keyframes ci-workbench-enter { from { opacity: .7; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        @media (max-width: 820px) {
+            .tree-sitter-workbench .ci-repository { grid-template-columns: 1fr auto; }
+            .tree-sitter-workbench .ci-repository-label { grid-column: 1 / -1; }
+            .tree-sitter-workbench .ci-tools { grid-template-columns: 1fr; }
+            .tree-sitter-workbench .ci-tool + .ci-tool { border-top: 1px solid var(--color-border); border-left: 0; }
+            .tree-sitter-workbench .ci-tool-heading { min-height: 0; }
+        }
+        @media (max-width: 560px) {
+            .tree-sitter-workbench .ci-header { align-items: flex-start; flex-direction: column; gap: .8rem; }
+            .tree-sitter-workbench .ci-repository { grid-template-columns: 1fr; }
+            .tree-sitter-workbench .ci-repository-actions { display: grid; grid-template-columns: auto 1fr; }
+            .tree-sitter-workbench .ci-repository-actions .btn-primary { width: 100%; }
+            .tree-sitter-workbench .ci-field-row { grid-template-columns: 1fr; }
+            .tree-sitter-workbench .ci-actions { align-items: stretch; flex-direction: column; }
+            .tree-sitter-workbench .ci-actions .btn { width: 100%; }
+            .tree-sitter-workbench .ci-results-head { align-items: flex-start; }
+            .tree-sitter-workbench .ci-text-button { font-size: 0; }
+            .tree-sitter-workbench .ci-text-button x-icon { margin: 0; }
+        }
+        @media (prefers-reduced-motion: reduce) { .tree-sitter-workbench { animation: none; } }
     </style>
 </body>
 </html>

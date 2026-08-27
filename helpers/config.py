@@ -14,6 +14,7 @@ DEFAULTS: dict[str, Any] = {
     "index_snippet_chars": 800,
     "context_max_chars": 16_000,
     "context_max_results": 16,
+    "auto_context_enabled": True,
     "auto_refresh_index": True,
     "allow_outside_project": False,
 }
@@ -32,6 +33,7 @@ def normalize_config(value: dict[str, Any] | None) -> dict[str, Any]:
         "index_snippet_chars": _bounded_int(raw, "index_snippet_chars", 100, 10_000),
         "context_max_chars": _bounded_int(raw, "context_max_chars", 1_000, 100_000),
         "context_max_results": _bounded_int(raw, "context_max_results", 1, 200),
+        "auto_context_enabled": _as_bool(raw.get("auto_context_enabled"), True),
         "auto_refresh_index": _as_bool(raw.get("auto_refresh_index"), True),
         "allow_outside_project": _as_bool(raw.get("allow_outside_project"), False),
     }
