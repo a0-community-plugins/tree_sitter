@@ -1,7 +1,40 @@
 ### tree_sitter
 Structural code intelligence for the active Agent Zero project. Use it to reduce blind file reading; it complements text search, type checking, and tests.
 
-For active-project tasks, bounded structural context is added automatically before the first model call. Use the methods below when you need a more specific query, a manual refresh, or post-edit diagnostics.
+For active-project tasks, bounded structural context is added automatically before the first model call. Use the actions below when you need a more specific query, a manual refresh, or post-edit diagnostics.
+
+Input schema for tool_args:
+{
+  "type": "object",
+  "properties": {
+    "action": {
+      "type": "string",
+      "enum": ["context", "search", "references", "inspect", "diagnostics", "scope", "query", "index", "status", "languages", "symbols", "chunks", "lookup", "overview"]
+    },
+    "task": {"type": "string"},
+    "symbol": {"type": "string"},
+    "root_path": {"type": "string"},
+    "query": {"type": "string"},
+    "query_kind": {
+      "type": "string",
+      "enum": ["tags", "locals", "highlights", "injections", "folds", "indents"]
+    },
+    "path": {"type": "string"},
+    "paths": {
+      "anyOf": [
+        {"type": "array", "items": {"type": "string"}},
+        {"type": "string"}
+      ]
+    },
+    "language": {"type": "string"},
+    "line": {"type": "integer", "minimum": 1},
+    "column": {"type": "integer", "minimum": 1},
+    "limit": {"type": "integer", "minimum": 1},
+    "force": {"type": "boolean"}
+  },
+  "required": ["action"],
+  "additionalProperties": false
+}
 
 #### tree_sitter:context
 Build a bounded coding context before a non-trivial edit.
